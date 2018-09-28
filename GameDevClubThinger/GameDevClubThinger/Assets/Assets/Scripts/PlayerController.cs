@@ -14,22 +14,16 @@ public class PlayerController : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		if (Input.GetAxis("Horizontal") != 0) {
-			float tempx = selfTransform.position.x + (Input.GetAxis ("Horizontal") * speed);
-			float tempy = selfTransform.position.y;
-			float tempz = selfTransform.position.z;
-			Vector3 tempPos = new Vector3 (tempx, tempy, tempz);
+        float inputX = Input.GetAxis("Horizontal");
+        float inputY = Input.GetAxis("Vertical");
 
-			selfTransform.position = tempPos;
-		}
+        if (inputX != 0 || inputY != 0)
+        {
+            float tempX = selfTransform.position.x + inputX * speed;
+            float tempY = selfTransform.position.y;
+            float tempZ = selfTransform.position.z + inputY * speed;
 
-		if (Input.GetAxis("Vertical") != 0) {
-			float tempx = selfTransform.position.x;
-			float tempy = selfTransform.position.y;
-			float tempz = selfTransform.position.z + (Input.GetAxis ("Vertical") * speed);
-			Vector3 tempPos = new Vector3 (tempx, tempy, tempz);
-
-			selfTransform.position = tempPos;
-		}
-	}
+            selfTransform.position = new Vector3(tempX, tempY, tempZ);
+        }
+    }
 }
