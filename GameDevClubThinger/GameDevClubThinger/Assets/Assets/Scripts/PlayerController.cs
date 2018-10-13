@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour {
 	private float posYLastPhysicsTick = 0.0f;
 	private bool canJump = true;
 	
+	private float gravity = 1.0f;
+	
 	private Transform selfTransform;
 	private Rigidbody selfRigidbody;
 	
@@ -54,6 +56,13 @@ public class PlayerController : MonoBehaviour {
 	
 	// FixedUpdate is called once per frame of physics
 	void FixedUpdate () {
+		if (selfRigidbody.velocity.y > 0) {
+			gravity = 1;
+		} else {
+			gravity = 3;
+		}
+		selfRigidbody.AddForce(Physics.gravity * selfRigidbody.mass * gravity);
+		
 		if (posYLastPhysicsTick == selfTransform.position.y) {
 			canJump = true;
 		} else {
