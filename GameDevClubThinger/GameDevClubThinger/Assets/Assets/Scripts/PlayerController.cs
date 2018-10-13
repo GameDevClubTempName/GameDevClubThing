@@ -5,14 +5,17 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	
-	public float turningSpeed = 3.5f;
-	public float movementSpeed = 0.5f;
-	public int jumpStrength = 4000;
+	public float turningSpeed;
+	public float movementSpeed;
+	public float jumpStrength;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0.0f;
 	
+	private float posXLastRenderTick = 0.0f;
 	private float posYLastRenderTick = 0.0f;
+	private float posZLastRenderTick = 0.0f;
+	
 	private float posYLastPhysicsTick = 0.0f;
 	private bool canJump = true;
 	
@@ -68,14 +71,10 @@ public class PlayerController : MonoBehaviour {
 		
 		bool updateNeeded = false;
 		
-		if (posYLastRenderTick != selfTransform.position.y) {
+		if (posXLastRenderTick != selfTransform.position.x || posYLastRenderTick != selfTransform.position.y || posZLastRenderTick != selfTransform.position.z) {
+			posXLastRenderTick = selfTransform.position.x;
 			posYLastRenderTick = selfTransform.position.y;
-			updateNeeded = true;
-		}
-		
-		if (inputJump != 0 && canJump) {
-			canJump = false;
-			selfRigidbody.AddForce(transform.up * jumpStrength);
+			posZLastRenderTick = selfTransform.position.z;
 			updateNeeded = true;
 		}
 		
@@ -83,6 +82,11 @@ public class PlayerController : MonoBehaviour {
 			facingAngle += turningSpeed * inputRotate;
 			selfTransform.Rotate(0, turningSpeed * inputRotate, 0);
 			updateNeeded = true;
+		}
+		
+		if (inputJump != 0 && canJump) {
+			canJump = false;
+			selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.Impulse);
 		}
 		
 		if (inputForward != 0 || inputStrafe != 0) {
@@ -105,12 +109,14 @@ public class PlayerController : MonoBehaviour {
 			float dZ = -movementSpeed * inputMagnitude * (float) Math.Cos(movementAngle);
 			
 			// Todo: Change this into a physics engine force instead, to work with collision.
+			
+			// selfRigidbody.AddForce(transform.right * dX * 100, ForceMode.Impulse);
+			// selfRigidbody.AddForce(transform.forward * dZ * 100, ForceMode.Impulse);
+			
 			float posX = selfTransform.position.x + dX;
 			float posY = selfTransform.position.y;
 			float posZ = selfTransform.position.z + dZ;
 			selfTransform.position = new Vector3(posX, posY, posZ);
-			
-			updateNeeded = true;
 		}
 		
 		if (updateNeeded) {
