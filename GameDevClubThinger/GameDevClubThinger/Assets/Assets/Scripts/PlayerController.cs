@@ -102,12 +102,12 @@ public class PlayerController : MonoBehaviour {
 			
 			// These are negative because that's what made it work ¯\_(ツ)_/¯
 			float dX = -movementSpeed * inputMagnitude * (float) Math.Sin(movementAngle);
-			float dY = -movementSpeed * inputMagnitude * (float) Math.Cos(movementAngle);
+			float dZ = -movementSpeed * inputMagnitude * (float) Math.Cos(movementAngle);
 			
 			// Todo: Change this into a physics engine force instead, to work with collision.
 			float posX = selfTransform.position.x + dX;
 			float posY = selfTransform.position.y;
-			float posZ = selfTransform.position.z + dY;
+			float posZ = selfTransform.position.z + dZ;
 			selfTransform.position = new Vector3(posX, posY, posZ);
 			
 			updateNeeded = true;
