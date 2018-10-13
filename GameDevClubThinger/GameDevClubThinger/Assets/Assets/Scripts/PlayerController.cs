@@ -62,6 +62,7 @@ public class PlayerController : MonoBehaviour {
 		
 		if (inputRotate != 0) {
 			facingAngle += turningSpeed * inputRotate;
+			selfTransform.Rotate(0, turningSpeed * inputRotate, 0);
 			updateNeeded = true;
 		}
 		
