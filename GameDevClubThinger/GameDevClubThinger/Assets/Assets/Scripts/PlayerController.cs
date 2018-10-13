@@ -89,6 +89,8 @@ public class PlayerController : MonoBehaviour {
 			selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.Impulse);
 		}
 		
+		float dX = 0.0f;
+		float dZ = 0.0f;
 		if (inputForward != 0 || inputStrafe != 0) {
 			
 			// Get the direction of the input; forward has an angle of 0, right strafing has an angle of pi / 2
@@ -105,19 +107,10 @@ public class PlayerController : MonoBehaviour {
 			float movementAngle = (float) (facingAngle / 180 * Math.PI + inputAngle);
 			
 			// These are negative because that's what made it work ¯\_(ツ)_/¯
-			float dX = -movementSpeed * inputMagnitude * (float) Math.Sin(movementAngle);
-			float dZ = -movementSpeed * inputMagnitude * (float) Math.Cos(movementAngle);
-			
-			// Todo: Change this into a physics engine force instead, to work with collision.
-			
-			// selfRigidbody.AddForce(transform.right * dX * 100, ForceMode.Impulse);
-			// selfRigidbody.AddForce(transform.forward * dZ * 100, ForceMode.Impulse);
-			
-			float posX = selfTransform.position.x + dX;
-			float posY = selfTransform.position.y;
-			float posZ = selfTransform.position.z + dZ;
-			selfTransform.position = new Vector3(posX, posY, posZ);
+			dX = -movementSpeed * inputMagnitude * (float) Math.Sin(movementAngle);
+			dZ = -movementSpeed * inputMagnitude * (float) Math.Cos(movementAngle);
 		}
+		selfRigidbody.velocity = new Vector3(dX, selfRigidbody.velocity.y, dZ);
 		
 		if (updateNeeded) {
 			UpdateCameraTransform();
