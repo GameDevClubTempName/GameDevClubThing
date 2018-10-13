@@ -5,12 +5,16 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	
-	public float turningSpeed = 2.5f;
+	public float turningSpeed = 3.5f;
 	public float movementSpeed = 0.5f;
-	public float jumpSpeed = 3.0f;
+	public int jumpStrength = 4000;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0.0f;
+	
+	private float posYLastRenderTick = 0.0f;
+	private float posYLastPhysicsTick = 0.0f;
+	private bool canJump = true;
 	
 	private Transform selfTransform;
 	private Rigidbody selfRigidbody;
@@ -45,7 +49,16 @@ public class PlayerController : MonoBehaviour {
 		cameraTransform.LookAt(selfTransform);
 	}
 	
-	// Update is called once per frame
+	// FixedUpdate is called once per frame of physics
+	void FixedUpdate () {
+		if (posYLastPhysicsTick == selfTransform.position.y) {
+			canJump = true;
+		} else {
+			posYLastPhysicsTick = selfTransform.position.y;
+		}
+	}
+	
+	// Update is called once per frame of rendering
 	void Update () {
 		
 		float inputForward = Input.GetAxis("Vertical");
@@ -55,8 +68,14 @@ public class PlayerController : MonoBehaviour {
 		
 		bool updateNeeded = false;
 		
-		if (inputJump != 0) {
-			selfRigidbody.AddForce(transform.up * 250);
+		if (posYLastRenderTick != selfTransform.position.y) {
+			posYLastRenderTick = selfTransform.position.y;
+			updateNeeded = true;
+		}
+		
+		if (inputJump != 0 && canJump) {
+			canJump = false;
+			selfRigidbody.AddForce(transform.up * jumpStrength);
 			updateNeeded = true;
 		}
 		
