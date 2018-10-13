@@ -57,9 +57,9 @@ public class PlayerController : MonoBehaviour {
 		if (inputForward != 0 || inputStrafe != 0) {
 			
 			// Get the direction of the input; forward has an angle of 0, right strafing has an angle of pi / 2
-			// Backward should have an angle of 1 pi, but the range of inverse sin is from -pi / 2 to pi / 2; forward and backward appear identical to sinh
+			// Backward should have an angle of 1 pi, but the range of inverse sin is from -pi / 2 to pi / 2; forward and backward appear identical to asin
 			float inputMagnitude = (float) Math.Sqrt(inputForward * inputForward + inputStrafe * inputStrafe);
-			float inputAngle = (float) Math.Sinh(inputStrafe / inputMagnitude);
+			float inputAngle = (float) Math.Asin(inputStrafe / inputMagnitude);
 			
 			// Handle the limited range of inverse sin for backwards movement
 			if (inputForward < 0) {
