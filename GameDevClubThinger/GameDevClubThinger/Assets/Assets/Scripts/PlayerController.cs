@@ -7,15 +7,20 @@ public class PlayerController : MonoBehaviour {
 	
 	public float turningSpeed = 2.5f;
 	public float movementSpeed = 0.5f;
+	public float jumpSpeed = 3.0f;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0.0f;
 	
 	private Transform selfTransform;
+	private Rigidbody selfRigidbody;
+	
 	private Transform cameraTransform;
 
 	void Start () {
 		selfTransform = this.GetComponent<Transform> ();
+		selfRigidbody = this.GetComponent<Rigidbody> ();
+		
 		GameObject camera = GameObject.FindGameObjectWithTag("MainCamera");
 		if (camera == null) {
 			Debug.Log("Camera not found!");
@@ -46,8 +51,14 @@ public class PlayerController : MonoBehaviour {
 		float inputForward = Input.GetAxis("Vertical");
 		float inputStrafe = Input.GetAxis("Horizontal");
 		float inputRotate = Input.GetAxis("Mouse X");
+		float inputJump = Input.GetAxis("Jump");
 		
 		bool updateNeeded = false;
+		
+		if (inputJump != 0) {
+			selfRigidbody.AddForce(transform.up * 250);
+			updateNeeded = true;
+		}
 		
 		if (inputRotate != 0) {
 			facingAngle += turningSpeed * inputRotate;
