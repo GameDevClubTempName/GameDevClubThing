@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿
+#define DEBUG_MOVEMENT
+
+using System.Collections;
 using System.Collections.Generic;
 using System; // I had to do this to get Math to work, I don't think this is the best way?
 using UnityEngine;
@@ -95,9 +98,17 @@ public class PlayerController : MonoBehaviour {
 			canJump = true;
 			jumpHeld = false;
 			glide = false;
+			
+			#if DEBUG_MOVEMENT
+			Debug.Log("Regained jump.");
+			#endif
 		} else if (selfRigidbody.velocity.y < 0 && canJump) {
 			// If the player has fallen off an edge, they lose their ability to jump.
 			canJump = false;
+			
+			#if DEBUG_MOVEMENT
+			Debug.Log("Fell off ledge.");
+			#endif
 		}
 	}
 	
@@ -134,14 +145,23 @@ public class PlayerController : MonoBehaviour {
 				canJump = false;
 				jumpHeld = true;
 				selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.Impulse);
-				// Debug.Log("Jumped.");
+				
+				#if DEBUG_MOVEMENT
+				Debug.Log("Jumped.");
+				#endif
 			} else {
 				glide = true;
-				// Debug.Log("Started gliding.");
+				
+				#if DEBUG_MOVEMENT
+				Debug.Log("Started gliding.");
+				#endif
 			}
 		} else if (!inputJumpHeld && jumpHeld) {
 			jumpHeld = false;
-			// Debug.Log("Jump released.");
+			
+			#if DEBUG_MOVEMENT
+			Debug.Log("Jump released.");
+			#endif
 		}
 		
 		// Orthogonal movement:
