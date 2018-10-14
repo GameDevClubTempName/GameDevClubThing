@@ -1,5 +1,6 @@
 ﻿
-#define DEBUG_MOVEMENT
+// #define DEBUG_MOVEMENT
+#define DEBUG_CONSTANTS
 
 using System.Collections;
 using System.Collections.Generic;
@@ -8,33 +9,37 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	
-	public float turningSpeed = 7.0f;
-	public float movementSpeed = 10.0f;
+	public float turningSpeed = 7f;
 	
-	// Initial velocity impulse after jumping.
-	public float jumpStrength = 12.0f;
+	// Maximum orthogonal movement speed.
+	public float movementSpeed = 10f;
 	
-	// Gravity used when jumping while jump hasn't yet been released.
-	public float gravityOnJumpHeld = -5f;
+	// Distance from where a maximum-height, maximum-speed jump starts to the apex.
+	public float distJumpToLedge = 10f;
 	
-	// Gravity used when jumping but after jump is released.
-	public float gravityOnJumpRelease = -10f;
+	public float minJumpHeight = 3f;
+	public float maxJumpHeight = 11f;
+	
+	// Calculated based on movementSpeed, distJumpToLedge, and min/max jump height
+	private float jumpVelocity;
+	private float gravityOnJumpHeld;
+	private float gravityOnJumpRelease;
 	
 	// Gravity used whenever player is falling.
 	public float gravityOnFalling = -20f;
 	
 	// Velocity minimum when gliding.
-	public float glideVelocity = -2.0f;
+	public float glideVelocity = -1f;
 	
 	// Velocity below which it is detected the player has fallen off a ledge.
 	public float ledgeSensitivity = -0.1f;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
-	private float facingAngle = 0.0f;
+	private float facingAngle = 0f;
 	
-	private float posXLastRenderTick = 0.0f;
-	private float posYLastRenderTick = 0.0f;
-	private float posZLastRenderTick = 0.0f;
+	private float posXLastRenderTick = 0f;
+	private float posYLastRenderTick = 0f;
+	private float posZLastRenderTick = 0f;
 	
 	private bool canJump = true;
 	private bool jumpHeld = false;
@@ -44,7 +49,7 @@ public class PlayerController : MonoBehaviour {
 	private Rigidbody selfRigidbody;
 	
 	private Transform cameraTransform;
-
+	
 	void Start () {
 		selfTransform = this.GetComponent<Transform> ();
 		selfRigidbody = this.GetComponent<Rigidbody> ();
@@ -56,6 +61,18 @@ public class PlayerController : MonoBehaviour {
 			cameraTransform = camera.GetComponent<Transform>();
 			UpdateCameraTransform();
 		}
+		
+		float timeToApex = distJumpToLedge / movementSpeed;
+		jumpVelocity = 2 * maxJumpHeight / timeToApex;
+		gravityOnJumpHeld = -jumpVelocity / timeToApex;
+		gravityOnJumpRelease = jumpVelocity / minJumpHeight / 2 - jumpVelocity * jumpVelocity / minJumpHeight;
+		
+		#if DEBUG_CONSTANTS
+		Debug.Log("Jump velocity: " + jumpVelocity);
+		Debug.Log("Jump held gravity: " + gravityOnJumpHeld);
+		Debug.Log("Jump released gravity: " + gravityOnJumpRelease);
+		#endif
+		
 		// Cursor.visible = false;
 	}
 	
@@ -149,7 +166,7 @@ public class PlayerController : MonoBehaviour {
 			if (canJump) {
 				canJump = false;
 				jumpHeld = true;
-				selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.VelocityChange);
+				selfRigidbody.AddForce(transform.up * jumpVelocity, ForceMode.VelocityChange);
 				
 				#if DEBUG_MOVEMENT
 				Debug.Log("Jumped.");
