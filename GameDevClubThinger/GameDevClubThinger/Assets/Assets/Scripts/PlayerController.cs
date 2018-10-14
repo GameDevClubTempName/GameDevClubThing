@@ -9,7 +9,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 	
 	public float turningSpeed = 7.0f;
-	public float movementSpeed = 30.0f;
+	public float movementSpeed = 10.0f;
 	
 	// Initial velocity impulse after jumping.
 	public float jumpStrength = 12.0f;
@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour {
 	
 	// Velocity minimum when gliding.
 	public float glideVelocity = -2.0f;
+	
+	// Velocity below which it is detected the player has fallen off a ledge.
+	public float ledgeSensitivity = -0.1f;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0.0f;
@@ -102,7 +105,7 @@ public class PlayerController : MonoBehaviour {
 			#if DEBUG_MOVEMENT
 			Debug.Log("Regained jump.");
 			#endif
-		} else if (selfRigidbody.velocity.y < 0 && canJump) {
+		} else if (selfRigidbody.velocity.y < ledgeSensitivity && canJump) {
 			// If the player has fallen off an edge, they lose their ability to jump.
 			canJump = false;
 			
@@ -171,20 +174,21 @@ public class PlayerController : MonoBehaviour {
 			
 			// Get the direction of the input; forward has an angle of 0, right strafing has an angle of pi / 2
 			// Backward should have an angle of 1 pi, but the range of inverse sin is from -pi / 2 to pi / 2; forward and backward appear identical to asin
-			float inputMagnitude = (float) Math.Sqrt(inputForward * inputForward + inputStrafe * inputStrafe);
-			float inputAngle = (float) Math.Asin(inputStrafe / inputMagnitude);
+			double inputMagnitude = Math.Sqrt(inputForward * inputForward + inputStrafe * inputStrafe);
+			
+			double inputAngle = Math.Asin(inputStrafe / inputMagnitude);
 			
 			// Handle the limited range of inverse sin for backwards movement
 			if (inputForward < 0) {
-				inputAngle = (float) (Math.PI - inputAngle);
+				inputAngle = Math.PI - inputAngle;
 			}
 			
 			// The direction the player will move depends on both the direction the player's facing and the direction of the input
-			float movementAngle = (float) (facingAngle / 180 * Math.PI + inputAngle);
+			double movementAngle = facingAngle / 180 * Math.PI + inputAngle;
 			
 			// These are negative because that's what made it work ¯\_(ツ)_/¯
-			dX = -movementSpeed * inputMagnitude * (float) Math.Sin(movementAngle);
-			dZ = -movementSpeed * inputMagnitude * (float) Math.Cos(movementAngle);
+			dX = (float) (-movementSpeed * inputMagnitude * Math.Sin(movementAngle));
+			dZ = (float) (-movementSpeed * inputMagnitude * Math.Cos(movementAngle));
 		}
 		selfRigidbody.velocity = new Vector3(dX, selfRigidbody.velocity.y, dZ);
 		
