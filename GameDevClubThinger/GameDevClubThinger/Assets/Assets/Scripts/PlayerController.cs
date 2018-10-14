@@ -186,6 +186,10 @@ public class PlayerController : MonoBehaviour {
 			// The direction the player will move depends on both the direction the player's facing and the direction of the input
 			double movementAngle = facingAngle / 180 * Math.PI + inputAngle;
 			
+			// This line is trigonometric magic. Don't touch.
+			// Dividing inputMagnitude by this number prevents diagonal movement from being ~1.414 times faster than strictly orthogonal movement.
+			inputMagnitude /= Math.Sqrt(Math.Pow(Math.Tan(Math.Abs(inputAngle - Math.Round(inputAngle / Math.PI * 2) * Math.PI / 2)), 2) + 1);
+			
 			// These are negative because that's what made it work ¯\_(ツ)_/¯
 			dX = (float) (-movementSpeed * inputMagnitude * Math.Sin(movementAngle));
 			dZ = (float) (-movementSpeed * inputMagnitude * Math.Cos(movementAngle));
