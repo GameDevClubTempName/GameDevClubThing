@@ -15,13 +15,13 @@ public class PlayerController : MonoBehaviour {
 	public float jumpStrength = 12.0f;
 	
 	// Gravity used when gliding, or when jumping but after jump is released.
-	public float gravityDefault = 1.0f;
+	public float gravityDefault = -10f;
 	
 	// Gravity used when jumping while jump hasn't yet been released.
-	public float gravityOnJumpHeld = 0.5f;
+	public float gravityOnJumpHeld = -5f;
 	
 	// Gravity used whenever player is falling, unless they're gliding.
-	public float gravityOnFalling = 1.8f;
+	public float gravityOnFalling = -20f;
 	
 	// Velocity minimum when gliding.
 	public float glideVelocity = -2.0f;
@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour {
 		}
 		
 		// Handle gravity here instead of letting the physics engine do it, so that we can customize its strength.
-		selfRigidbody.AddForce(Physics.gravity * selfRigidbody.mass * gravity);
+		selfRigidbody.AddForce(transform.up * gravity, ForceMode.Acceleration);
 		
 		// If gliding and the player would now be falling faster than the glider allows, set the velocity properly.
 		if (gliding && selfRigidbody.velocity.y < glideVelocity) {
@@ -147,7 +147,7 @@ public class PlayerController : MonoBehaviour {
 			if (canJump) {
 				canJump = false;
 				jumpHeld = true;
-				selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.Impulse);
+				selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.VelocityChange);
 				
 				#if DEBUG_MOVEMENT
 				Debug.Log("Jumped.");
