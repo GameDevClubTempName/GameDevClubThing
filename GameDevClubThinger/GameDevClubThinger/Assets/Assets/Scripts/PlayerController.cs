@@ -14,13 +14,13 @@ public class PlayerController : MonoBehaviour {
 	// Initial velocity impulse after jumping.
 	public float jumpStrength = 12.0f;
 	
-	// Gravity used when gliding, or when jumping but after jump is released.
-	public float gravityDefault = -10f;
-	
 	// Gravity used when jumping while jump hasn't yet been released.
 	public float gravityOnJumpHeld = -5f;
 	
-	// Gravity used whenever player is falling, unless they're gliding.
+	// Gravity used when jumping but after jump is released.
+	public float gravityOnJumpRelease = -10f;
+	
+	// Gravity used whenever player is falling.
 	public float gravityOnFalling = -20f;
 	
 	// Velocity minimum when gliding.
@@ -76,11 +76,13 @@ public class PlayerController : MonoBehaviour {
 	// FixedUpdate is called once per frame of physics
 	void FixedUpdate () {
 		
-		float gravity = gravityDefault;
+		float gravity;
 		bool gliding = false;
 		if (selfRigidbody.velocity.y >= 0) {
 			if (jumpHeld) {
 				gravity = gravityOnJumpHeld;
+			} else {
+				gravity = gravityOnJumpRelease;
 			}
 		} else {
 			gravity = gravityOnFalling;
