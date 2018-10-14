@@ -5,9 +5,23 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	
-	public float turningSpeed;
-	public float movementSpeed;
-	public float jumpStrength;
+	public float turningSpeed = 7.0f;
+	public float movementSpeed = 30.0f;
+	
+	// Initial velocity impulse after jumping.
+	public float jumpStrength = 12.0f;
+	
+	// Gravity used when gliding, or when jumping but after jump is released.
+	public float gravityDefault = 1.0f;
+	
+	// Gravity used when jumping while jump hasn't yet been released.
+	public float gravityOnJumpHeld = 0.5f;
+	
+	// Gravity used whenever player is falling, unless they're gliding.
+	public float gravityOnFalling = 1.8f;
+	
+	// Velocity minimum when gliding.
+	public float glideVelocity = -2.0f;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0.0f;
@@ -16,10 +30,9 @@ public class PlayerController : MonoBehaviour {
 	private float posYLastRenderTick = 0.0f;
 	private float posZLastRenderTick = 0.0f;
 	
-	private float posYLastPhysicsTick = 0.0f;
 	private bool canJump = true;
-	
-	private float gravity = 1.0f;
+	private bool jumpHeld = false;
+	private bool glide = false;
 	
 	private Transform selfTransform;
 	private Rigidbody selfRigidbody;
@@ -56,17 +69,35 @@ public class PlayerController : MonoBehaviour {
 	
 	// FixedUpdate is called once per frame of physics
 	void FixedUpdate () {
-		if (selfRigidbody.velocity.y > 0) {
-			gravity = 1;
+		
+		float gravity = gravityDefault;
+		bool gliding = false;
+		if (selfRigidbody.velocity.y >= 0) {
+			if (jumpHeld) {
+				gravity = gravityOnJumpHeld;
+			}
 		} else {
-			gravity = 3;
+			gravity = gravityOnFalling;
+			gliding = glide;
 		}
+		
+		// Handle gravity here instead of letting the physics engine do it, so that we can customize its strength.
 		selfRigidbody.AddForce(Physics.gravity * selfRigidbody.mass * gravity);
 		
-		if (posYLastPhysicsTick == selfTransform.position.y) {
+		// If gliding and the player would now be falling faster than the glider allows, set the velocity properly.
+		if (gliding && selfRigidbody.velocity.y < glideVelocity) {
+			selfRigidbody.velocity = new Vector3(selfRigidbody.velocity.x, glideVelocity, selfRigidbody.velocity.z);
+		}
+		
+		if (selfRigidbody.velocity.y == 0 && !canJump && !jumpHeld) {
+			// This is supposed to detect when the player has set themself onto the ground (their vertical velocity will be zero)
+			// However, I suppose it's theoretically possible for the velocity to precisely equal 0 at the apex of a jump?
 			canJump = true;
-		} else {
-			posYLastPhysicsTick = selfTransform.position.y;
+			jumpHeld = false;
+			glide = false;
+		} else if (selfRigidbody.velocity.y < 0 && canJump) {
+			// If the player has fallen off an edge, they lose their ability to jump.
+			canJump = false;
 		}
 	}
 	
@@ -76,10 +107,13 @@ public class PlayerController : MonoBehaviour {
 		float inputForward = Input.GetAxis("Vertical");
 		float inputStrafe = Input.GetAxis("Horizontal");
 		float inputRotate = Input.GetAxis("Mouse X");
-		float inputJump = Input.GetAxis("Jump");
+		
+		bool inputJumpPress = Input.GetKeyDown(KeyCode.Space);
+		bool inputJumpHeld = Input.GetKey(KeyCode.Space);
 		
 		bool updateNeeded = false;
 		
+		// If the player's position has changed, the camera must be updated.
 		if (posXLastRenderTick != selfTransform.position.x || posYLastRenderTick != selfTransform.position.y || posZLastRenderTick != selfTransform.position.z) {
 			posXLastRenderTick = selfTransform.position.x;
 			posYLastRenderTick = selfTransform.position.y;
@@ -87,17 +121,30 @@ public class PlayerController : MonoBehaviour {
 			updateNeeded = true;
 		}
 		
+		// If the direction the player intends to be facing is changing, the camera must be updated.
 		if (inputRotate != 0) {
 			facingAngle += turningSpeed * inputRotate;
 			selfTransform.Rotate(0, turningSpeed * inputRotate, 0);
 			updateNeeded = true;
 		}
 		
-		if (inputJump != 0 && canJump) {
-			canJump = false;
-			selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.Impulse);
+		// Jumping:
+		if (inputJumpPress) {
+			if (canJump) {
+				canJump = false;
+				jumpHeld = true;
+				selfRigidbody.AddForce(transform.up * jumpStrength, ForceMode.Impulse);
+				// Debug.Log("Jumped.");
+			} else {
+				glide = true;
+				// Debug.Log("Started gliding.");
+			}
+		} else if (!inputJumpHeld && jumpHeld) {
+			jumpHeld = false;
+			// Debug.Log("Jump released.");
 		}
 		
+		// Orthogonal movement:
 		float dX = 0.0f;
 		float dZ = 0.0f;
 		if (inputForward != 0 || inputStrafe != 0) {
