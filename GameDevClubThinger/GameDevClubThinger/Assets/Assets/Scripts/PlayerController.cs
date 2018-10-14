@@ -153,10 +153,14 @@ public class PlayerController : MonoBehaviour {
 				Debug.Log("Jumped.");
 				#endif
 			} else {
-				glide = true;
+				glide = !glide;
 				
 				#if DEBUG_MOVEMENT
-				Debug.Log("Started gliding.");
+				if (glide) {
+					Debug.Log("Started gliding.");
+				} else {
+					Debug.Log("Stopped gliding.");
+				}
 				#endif
 			}
 		} else if (!inputJumpHeld && jumpHeld) {
