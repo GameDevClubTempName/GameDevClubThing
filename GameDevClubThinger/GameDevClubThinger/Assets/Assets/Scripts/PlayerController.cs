@@ -1,5 +1,5 @@
 ﻿
-// #define DEBUG_MOVEMENT
+#define DEBUG_MOVEMENT
 #define DEBUG_CONSTANTS
 
 using System.Collections;
@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour {
 	public float turningSpeed = 7f;
 	
 	// Maximum orthogonal movement speed.
-	public float movementSpeed = 10f;
+	public float movementSpeed = 15f;
 	
 	// Time a maximum-height, maximum-speed jump takes to reach its apex.
 	public float timeToApex = 1f;
@@ -28,6 +28,9 @@ public class PlayerController : MonoBehaviour {
 	// Gravity used whenever player is falling.
 	public float gravityOnFalling = -20f;
 	
+	// Gravity used when player is on a surface, to stop player from being pressed into the ground and slowed from friction.
+	public float gravityOnSurface = -10f;
+	
 	// Velocity minimum when gliding.
 	public float glideVelocity = -1f;
 	
@@ -41,7 +44,7 @@ public class PlayerController : MonoBehaviour {
 	private float posYLastRenderTick = 0f;
 	private float posZLastRenderTick = 0f;
 	
-	private bool canJump = true;
+	private bool onSurface = true;
 	private bool jumpHeld = false;
 	private bool glide = false;
 	
@@ -97,8 +100,10 @@ public class PlayerController : MonoBehaviour {
 		if (selfRigidbody.velocity.y >= 0) {
 			if (jumpHeld) {
 				gravity = gravityOnJumpHeld;
-			} else {
+			} else if (!onSurface) {
 				gravity = gravityOnJumpRelease;
+			} else {
+				gravity = gravityOnSurface;
 			}
 		} else {
 			gravity = gravityOnFalling;
@@ -113,19 +118,18 @@ public class PlayerController : MonoBehaviour {
 			selfRigidbody.velocity = new Vector3(selfRigidbody.velocity.x, glideVelocity, selfRigidbody.velocity.z);
 		}
 		
-		if (selfRigidbody.velocity.y == 0 && !canJump && !jumpHeld) {
+		if (selfRigidbody.velocity.y == 0 && !onSurface && !jumpHeld) {
 			// This is supposed to detect when the player has set themself onto the ground (their vertical velocity will be zero)
 			// However, I suppose it's theoretically possible for the velocity to precisely equal 0 at the apex of a jump?
-			canJump = true;
-			jumpHeld = false;
+			onSurface = true;
 			glide = false;
 			
 			#if DEBUG_MOVEMENT
 			Debug.Log("Regained jump.");
 			#endif
-		} else if (selfRigidbody.velocity.y < ledgeSensitivity && canJump) {
+		} else if (selfRigidbody.velocity.y < ledgeSensitivity && onSurface) {
 			// If the player has fallen off an edge, they lose their ability to jump.
-			canJump = false;
+			onSurface = false;
 			
 			#if DEBUG_MOVEMENT
 			Debug.Log("Fell off ledge.");
@@ -162,8 +166,8 @@ public class PlayerController : MonoBehaviour {
 		
 		// Jumping:
 		if (inputJumpPress) {
-			if (canJump) {
-				canJump = false;
+			if (onSurface) {
+				onSurface = false;
 				jumpHeld = true;
 				selfRigidbody.AddForce(transform.up * jumpVelocity, ForceMode.VelocityChange);
 				
