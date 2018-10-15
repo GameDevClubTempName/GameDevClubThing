@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour {
 	public float ledgeSensitivity = -0.1f;
 	
 	// Factor on how easily player can change their velocity while in the air.
-	public float airControl = 10f;
+	public float airControl = 1.5f;
 	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0f;
