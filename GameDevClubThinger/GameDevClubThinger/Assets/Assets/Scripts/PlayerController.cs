@@ -37,6 +37,9 @@ public class PlayerController : MonoBehaviour {
 	// Velocity below which it is detected the player has fallen off a ledge.
 	public float ledgeSensitivity = -0.1f;
 	
+	// Factor on how easily player can change their velocity while in the air.
+	public float airControl = 10f;
+	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0f;
 	
@@ -220,7 +223,16 @@ public class PlayerController : MonoBehaviour {
 			dX = (float) (-movementSpeed * inputMagnitude * Math.Sin(movementAngle));
 			dZ = (float) (-movementSpeed * inputMagnitude * Math.Cos(movementAngle));
 		}
-		selfRigidbody.velocity = new Vector3(dX, selfRigidbody.velocity.y, dZ);
+		
+		if (onSurface) {
+			selfRigidbody.velocity = new Vector3(dX, selfRigidbody.velocity.y, dZ);
+		} else {
+			dX = (dX - selfRigidbody.velocity.x) * airControl;
+			dZ = (dZ - selfRigidbody.velocity.z) * airControl;
+			
+			selfRigidbody.AddForce(selfTransform.InverseTransformDirection(transform.right) * dX, ForceMode.Acceleration);
+			selfRigidbody.AddForce(selfTransform.InverseTransformDirection(transform.forward) * dZ, ForceMode.Acceleration);
+		}
 		
 		if (updateNeeded) {
 			UpdateCameraTransform();
