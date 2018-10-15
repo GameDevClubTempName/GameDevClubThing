@@ -14,8 +14,8 @@ public class PlayerController : MonoBehaviour {
 	// Maximum orthogonal movement speed.
 	public float movementSpeed = 10f;
 	
-	// Distance from where a maximum-height, maximum-speed jump starts to the apex.
-	public float distJumpToLedge = 10f;
+	// Time a maximum-height, maximum-speed jump takes to reach its apex.
+	public float timeToApex = 1f;
 	
 	public float minJumpHeight = 3f;
 	public float maxJumpHeight = 11f;
@@ -62,7 +62,6 @@ public class PlayerController : MonoBehaviour {
 			UpdateCameraTransform();
 		}
 		
-		float timeToApex = distJumpToLedge / movementSpeed;
 		jumpVelocity = 2 * maxJumpHeight / timeToApex;
 		gravityOnJumpHeld = -jumpVelocity / timeToApex;
 		gravityOnJumpRelease = jumpVelocity / minJumpHeight / 2 - jumpVelocity * jumpVelocity / minJumpHeight;
