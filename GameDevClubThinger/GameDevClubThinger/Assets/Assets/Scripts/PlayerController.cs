@@ -40,8 +40,14 @@ public class PlayerController : MonoBehaviour {
 	// Factor on how easily player can change their velocity while in the air.
 	public float airControl = 1.5f;
 	
+	// Distance from player to camera, irrespective of camera angle.
+	public float cameraDistance = 10f;
+	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0f;
+
+	// Camera angle is also in degrees, for consistency.
+	private float cameraAngle = 45f;
 	
 	private float posXLastRenderTick = 0f;
 	private float posYLastRenderTick = 0f;
@@ -78,16 +84,19 @@ public class PlayerController : MonoBehaviour {
 		Debug.Log("Jump released gravity: " + gravityOnJumpRelease);
 		#endif
 		
-		// Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
 	}
 	
 	// Called whenever the player's position has moved, or whenever the player's field of view has changed (i.e. turning with the mouse).
 	void UpdateCameraTransform () {
 		
 		// Compute the location of the camera based on which direction it should be looking
-		float posX = selfTransform.position.x + 10 * (float) Math.Sin(facingAngle / 180 * Math.PI);
-		float posY = selfTransform.position.y + 10;
-		float posZ = selfTransform.position.z + 10 * (float) Math.Cos(facingAngle / 180 * Math.PI);
+		double cameraOrthogonalDistance = cameraDistance * Math.Cos(cameraAngle / 180 * Math.PI);
+		double cameraVerticalDistance = cameraDistance * Math.Sin(cameraAngle / 180 * Math.PI);
+		
+		float posX = (float) (selfTransform.position.x + cameraOrthogonalDistance * Math.Sin(facingAngle / 180 * Math.PI));
+		float posY = (float) (selfTransform.position.y + cameraVerticalDistance);
+		float posZ = (float) (selfTransform.position.z + cameraOrthogonalDistance * Math.Cos(facingAngle / 180 * Math.PI));
 		
 		cameraTransform.position = new Vector3(posX, posY, posZ);
 		
@@ -145,7 +154,8 @@ public class PlayerController : MonoBehaviour {
 		
 		float inputForward = Input.GetAxis("Vertical");
 		float inputStrafe = Input.GetAxis("Horizontal");
-		float inputRotate = Input.GetAxis("Mouse X");
+		float inputYaw = Input.GetAxis("Mouse X");
+		float inputPitch = Input.GetAxis("Mouse Y");
 		
 		bool inputJumpPress = Input.GetKeyDown(KeyCode.Space);
 		bool inputJumpHeld = Input.GetKey(KeyCode.Space);
@@ -161,9 +171,18 @@ public class PlayerController : MonoBehaviour {
 		}
 		
 		// If the direction the player intends to be facing is changing, the camera must be updated.
-		if (inputRotate != 0) {
-			facingAngle += turningSpeed * inputRotate;
-			selfTransform.Rotate(0, turningSpeed * inputRotate, 0);
+		if (inputYaw != 0) {
+			facingAngle += turningSpeed * inputYaw;
+			selfTransform.Rotate(0, turningSpeed * inputYaw, 0);
+			updateNeeded = true;
+		}
+		if (inputPitch != 0) {
+			cameraAngle -= turningSpeed * inputPitch;
+			if (cameraAngle < 0) {
+				cameraAngle = 0f;
+			} else if (cameraAngle > 67.5) {
+				cameraAngle = 67.5f;
+			}
 			updateNeeded = true;
 		}
 		
