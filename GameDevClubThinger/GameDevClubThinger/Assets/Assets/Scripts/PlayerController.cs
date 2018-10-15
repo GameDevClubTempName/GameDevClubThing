@@ -43,6 +43,10 @@ public class PlayerController : MonoBehaviour {
 	// Distance from player to camera, irrespective of camera angle.
 	public float cameraDistance = 10f;
 	
+	public float minCameraAngle = -30f;
+	public float maxCameraAngle = 89.9f;
+	public float lookUpBuffer = 20f;
+	
 	// Note: facingAngle is in degrees. There's no good reason for this except for the fact that it didn't want to work in radians for whatever reason.
 	private float facingAngle = 0f;
 
@@ -91,8 +95,13 @@ public class PlayerController : MonoBehaviour {
 	void UpdateCameraTransform () {
 		
 		// Compute the location of the camera based on which direction it should be looking
-		double cameraOrthogonalDistance = cameraDistance * Math.Cos(cameraAngle / 180 * Math.PI);
-		double cameraVerticalDistance = cameraDistance * Math.Sin(cameraAngle / 180 * Math.PI);
+		float pseudoCameraAngle = cameraAngle;
+		if (cameraAngle < 0) {
+			pseudoCameraAngle = Math.Min(0, cameraAngle + lookUpBuffer);
+		}
+		
+		double cameraOrthogonalDistance = cameraDistance * Math.Cos(pseudoCameraAngle / 180 * Math.PI);
+		double cameraVerticalDistance = cameraDistance * Math.Sin(Math.Max(0, cameraAngle) / 180 * Math.PI);
 		
 		float posX = (float) (selfTransform.position.x + cameraOrthogonalDistance * Math.Sin(facingAngle / 180 * Math.PI));
 		float posY = (float) (selfTransform.position.y + cameraVerticalDistance);
@@ -102,6 +111,10 @@ public class PlayerController : MonoBehaviour {
 		
 		// Change the camera's rotation to be aimed precisely at the player
 		cameraTransform.LookAt(selfTransform);
+		
+		if (cameraAngle < 0) {
+			cameraTransform.Rotate(pseudoCameraAngle, 0, 0);
+		}
 	}
 	
 	// FixedUpdate is called once per frame of physics
@@ -178,10 +191,10 @@ public class PlayerController : MonoBehaviour {
 		}
 		if (inputPitch != 0) {
 			cameraAngle -= turningSpeed * inputPitch;
-			if (cameraAngle < 0) {
-				cameraAngle = 0f;
-			} else if (cameraAngle > 89.9) {
-				cameraAngle = 89.9f;
+			if (cameraAngle < minCameraAngle - lookUpBuffer) {
+				cameraAngle = minCameraAngle - lookUpBuffer;
+			} else if (cameraAngle > maxCameraAngle) {
+				cameraAngle = maxCameraAngle;
 			}
 			updateNeeded = true;
 		}
