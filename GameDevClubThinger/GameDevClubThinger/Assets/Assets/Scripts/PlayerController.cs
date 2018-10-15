@@ -180,8 +180,8 @@ public class PlayerController : MonoBehaviour {
 			cameraAngle -= turningSpeed * inputPitch;
 			if (cameraAngle < 0) {
 				cameraAngle = 0f;
-			} else if (cameraAngle > 67.5) {
-				cameraAngle = 67.5f;
+			} else if (cameraAngle > 89.9) {
+				cameraAngle = 89.9f;
 			}
 			updateNeeded = true;
 		}
