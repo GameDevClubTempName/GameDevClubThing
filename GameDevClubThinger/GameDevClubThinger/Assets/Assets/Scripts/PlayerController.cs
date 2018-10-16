@@ -197,6 +197,8 @@ public class PlayerController : MonoBehaviour {
 				cameraAngle = maxCameraAngle;
 			}
 			updateNeeded = true;
+		} else if (cameraAngle < 0 && cameraAngle > -lookUpBuffer) {
+			cameraAngle = 0;
 		}
 		
 		// Jumping:
