@@ -171,6 +171,7 @@ public class PlayerController : MonoBehaviour {
 		float inputPitch = Input.GetAxis("Mouse Y");
 		
 		bool inputJumpPress = Input.GetKeyDown(KeyCode.Space);
+		bool inputJumpRelease = Input.GetKeyUp(KeyCode.Space);
 		bool inputJumpHeld = Input.GetKey(KeyCode.Space);
 		
 		bool updateNeeded = false;
@@ -201,6 +202,19 @@ public class PlayerController : MonoBehaviour {
 			cameraAngle = 0;
 		}
 		
+		// Gliding:
+		if (inputJumpPress && !jumpHeld && !onSurface) {
+			glide = !glide;
+			
+			#if DEBUG_MOVEMENT
+			if (glide) {
+				Debug.Log("Started gliding.");
+			} else {
+				Debug.Log("Stopped gliding.");
+			}
+			#endif
+		}
+		
 		// Jumping:
 		if (inputJumpPress) {
 			if (onSurface) {
@@ -211,23 +225,15 @@ public class PlayerController : MonoBehaviour {
 				#if DEBUG_MOVEMENT
 				Debug.Log("Jumped.");
 				#endif
-			} else {
-				glide = !glide;
+			}
+		} else if (inputJumpRelease) {
+			if (jumpHeld) {
+				jumpHeld = false;
 				
 				#if DEBUG_MOVEMENT
-				if (glide) {
-					Debug.Log("Started gliding.");
-				} else {
-					Debug.Log("Stopped gliding.");
-				}
+				Debug.Log("Jump released.");
 				#endif
 			}
-		} else if (!inputJumpHeld && jumpHeld) {
-			jumpHeld = false;
-			
-			#if DEBUG_MOVEMENT
-			Debug.Log("Jump released.");
-			#endif
 		}
 		
 		// Orthogonal movement:
