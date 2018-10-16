@@ -48,6 +48,8 @@ public class PlayerController : MonoBehaviour {
 	private float inputMouseX = 0f;
 	private float inputMouseY = 0f;
 	
+	private bool inputQ = false;
+	private bool inputE = false;
 	private bool inputJumpPress = false;
 	private bool inputJumpRelease = false;
 	
@@ -57,6 +59,7 @@ public class PlayerController : MonoBehaviour {
 	private bool doCameraUpdate = false;
 	
 	private Vector3 velocity;
+	private Vector3 checkpoint;
 	
 	private Transform transform;
 	private CharacterController controller;
@@ -90,6 +93,9 @@ public class PlayerController : MonoBehaviour {
 		Debug.Log("Jump held gravity: " + gravityOnJumpHeld);
 		Debug.Log("Jump released gravity: " + gravityOnJumpRelease);
 		#endif
+		
+		velocity = controller.velocity;
+		checkpoint = transform.position;
 	}
 	
 	bool GetJumpPress() {
@@ -104,6 +110,18 @@ public class PlayerController : MonoBehaviour {
 		bool isJumpReleased = inputJumpRelease;
 		inputJumpRelease = false;
 		return isJumpReleased;
+	}
+	
+	bool GetQ() {
+		bool isQ = inputQ;
+		inputQ = false;
+		return isQ;
+	}
+	
+	bool GetE() {
+		bool isE = inputE;
+		inputE = false;
+		return isE;
 	}
 	
 	void UpdateCamera() {
@@ -137,6 +155,9 @@ public class PlayerController : MonoBehaviour {
 		inputHorizontal = Input.GetAxis("Horizontal");
 		inputMouseX = Input.GetAxis("Mouse X");
 		inputMouseY = Input.GetAxis("Mouse Y");
+		
+		inputQ = inputQ || Input.GetKeyDown(KeyCode.Q);
+		inputE = inputE || Input.GetKeyDown(KeyCode.E);
 		
 		inputJumpPress = inputJumpPress || Input.GetKeyDown(KeyCode.Space);
 		inputJumpRelease = inputJumpRelease || Input.GetKeyUp(KeyCode.Space);
@@ -242,6 +263,12 @@ public class PlayerController : MonoBehaviour {
 			
 		} else if (pitch < 0 && pitch > -lookUpBuffer) {
 			pitch = 0;
+		}
+		
+		if (GetQ()) {
+			checkpoint = transform.position;
+		} else if (GetE()) {
+			transform.position = checkpoint;
 		}
 	}
 	
