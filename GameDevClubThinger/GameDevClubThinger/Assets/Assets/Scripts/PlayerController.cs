@@ -9,8 +9,10 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	
-	// In units per second:
+	// movementSpeed: In units per second
+	// groundControl: Factor on how easily player can change their velocity while on the ground
 	public float movementSpeed = 15f;
+	public float groundControl = 15f;
 	
 	// In degrees per second:
 	public float turningSpeed = 300f;
@@ -177,12 +179,17 @@ public class PlayerController : MonoBehaviour {
 			dZ = (float) (-movementSpeed * inputMagnitude * Math.Cos(movementAngle));
 		}
 		
+		float control;
+		
 		if (controller.isGrounded) {
-			velocity = new Vector3(dX, velocity.y, dZ);
-			
-		} else if (!(isGliding && !input)) {
-			dX = (dX - velocity.x) * airControl;
-			dZ = (dZ - velocity.z) * airControl;
+			control = groundControl;
+		} else {
+			control = airControl;
+		}
+		
+		if (!(isGliding && !input)) {
+			dX = (dX - velocity.x) * control;
+			dZ = (dZ - velocity.z) * control;
 			
 			FixedAcceleration(new Vector3(dX, 0, dZ));
 		}
