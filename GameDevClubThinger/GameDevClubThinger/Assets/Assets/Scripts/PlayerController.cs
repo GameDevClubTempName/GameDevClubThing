@@ -9,9 +9,11 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	
-	// In degrees/units per second:
-	public float turningSpeed = 360f;
+	// In units per second:
 	public float movementSpeed = 15f;
+	
+	// In degrees per second:
+	public float turningSpeed = 300f;
 	
 	// timeToApex: Time a maximum-height, maximum-speed jump takes to reach its apex
 	public float minJumpHeight = 3f;
@@ -26,22 +28,10 @@ public class PlayerController : MonoBehaviour {
 	// Gravity used whenever player is falling (units per second per second)
 	public float gravityOnFalling = -10f;
 	
-	// cameraDistance: Distance from player to camera, irrespective of camera angle
-	// min/maxCameraAngle: In degrees; negative is looking up above player, positive is looking down at player
-	// lookUpBuffer: How many degrees upwards a player needs to try to look before the camera will actually look up
-	public float cameraDistance = 10f;
-	public float minCameraAngle = -30f;
-	public float maxCameraAngle = 89.9f;
-	public float lookUpBuffer = 20f;
-	
 	// Calculated based on min/max jump height and time to apex
 	private float jumpVelocity;
 	private float gravityOnJumpHeld;
 	private float gravityOnJumpRelease;
-	
-	// In degrees:
-	private float yaw = 0f;
-	private float pitch = 45f;
 	
 	private float inputVertical = 0f;
 	private float inputHorizontal = 0f;
@@ -63,7 +53,7 @@ public class PlayerController : MonoBehaviour {
 	
 	private Transform transform;
 	private CharacterController controller;
-	private Transform cameraTransform;
+	private MainCameraController cameraController;
 	
 	void Start() {
 		
@@ -80,8 +70,8 @@ public class PlayerController : MonoBehaviour {
 		if (camera == null) {
 			Debug.Log("Camera not found!");
 		} else {
-			cameraTransform = camera.GetComponent<Transform>();
-			UpdateCamera();
+			cameraController = camera.GetComponent<MainCameraController>();
+			cameraController.CameraUpdate();
 		}
 		
 		jumpVelocity = 2 * maxJumpHeight / timeToApex;
@@ -124,32 +114,7 @@ public class PlayerController : MonoBehaviour {
 		return isE;
 	}
 	
-	void UpdateCamera() {
-		
-		// Compute the location of the camera based on which direction it should be looking
-		float pseudoPitch = pitch;
-		if (pitch < 0) {
-			pseudoPitch = Math.Min(0, pitch + lookUpBuffer);
-		}
-		
-		double cameraPlanarDistance = cameraDistance * Math.Cos(pseudoPitch / 180 * Math.PI);
-		double cameraVerticalDistance = cameraDistance * Math.Sin(Math.Max(0, pitch) / 180 * Math.PI);
-		
-		float posX = (float) (transform.position.x + cameraPlanarDistance * Math.Sin(yaw / 180 * Math.PI));
-		float posY = (float) (transform.position.y + cameraVerticalDistance);
-		float posZ = (float) (transform.position.z + cameraPlanarDistance * Math.Cos(yaw / 180 * Math.PI));
-		
-		cameraTransform.position = new Vector3(posX, posY, posZ);
-		
-		// Change the camera's rotation to be aimed precisely at the player
-		cameraTransform.LookAt(transform);
-		
-		if (pitch < 0) {
-			cameraTransform.Rotate(pseudoPitch, 0, 0);
-		}
-	}
-	
-	void UpdateInput() {
+	void InputUpdate() {
 		
 		inputVertical = Input.GetAxis("Vertical");
 		inputHorizontal = Input.GetAxis("Horizontal");
@@ -193,7 +158,7 @@ public class PlayerController : MonoBehaviour {
 			}
 			
 			// The direction the player will move depends on both the direction the player's facing and the direction of the input
-			double movementAngle = yaw / 180 * Math.PI + inputAngle;
+			double movementAngle = transform.eulerAngles.y / 180 * Math.PI + inputAngle;
 			
 			// This line is trigonometric magic.
 			// Dividing inputMagnitude by this number prevents diagonal movement from being ~1.414 times faster than strictly orthogonal movement.
@@ -244,26 +209,14 @@ public class PlayerController : MonoBehaviour {
 	
 	void PlayerControl() {
 		
+		bool doCameraUpdate = false;
+		
 		if (inputMouseX != 0) {
-			
-			yaw += turningSpeed * inputMouseX * Time.deltaTime;
 			transform.Rotate(0, turningSpeed * inputMouseX * Time.deltaTime, 0);
 			doCameraUpdate = true;
 		}
 		
-		if (inputMouseY != 0) {
-			
-			pitch -= turningSpeed * inputMouseY * Time.deltaTime;
-			if (pitch < minCameraAngle - lookUpBuffer) {
-				pitch = minCameraAngle - lookUpBuffer;
-			} else if (pitch > maxCameraAngle) {
-				pitch = maxCameraAngle;
-			}
-			doCameraUpdate = true;
-			
-		} else if (pitch < 0 && pitch > -lookUpBuffer) {
-			pitch = 0;
-		}
+		cameraController.Move(inputMouseY, doCameraUpdate);
 		
 		if (GetQ()) {
 			checkpoint = transform.position;
@@ -300,22 +253,24 @@ public class PlayerController : MonoBehaviour {
 	
 	void FixedUpdate() {
 		
-		velocity = controller.velocity;
-		
 		FixedPlayerControl();
 		Gravity();
 		
 		controller.Move(velocity * Time.fixedDeltaTime);
-		doCameraUpdate = true;
+		velocity = controller.velocity;
+		
+		if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
+			doCameraUpdate = true;
+		}
 	}
 	
 	void Update() {
 		
-		UpdateInput();
+		InputUpdate();
 		PlayerControl();
 		
 		if (doCameraUpdate) {
-			UpdateCamera();
+			cameraController.CameraUpdate();
 		}
 	}
 }
