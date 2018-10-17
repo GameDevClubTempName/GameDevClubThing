@@ -241,6 +241,7 @@ public class PlayerController : MonoBehaviour {
 			checkpoint = transform.position;
 		} else if (GetE()) {
 			transform.position = checkpoint;
+			doCameraUpdate = true;
 		}
 	}
 	
