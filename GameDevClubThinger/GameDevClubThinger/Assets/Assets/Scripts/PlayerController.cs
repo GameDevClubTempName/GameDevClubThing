@@ -218,7 +218,7 @@ public class PlayerController : MonoBehaviour {
 		
 		cameraController.Move(inputMouseY, doCameraUpdate);
 		
-		if (GetQ()) {
+		if (GetQ() && controller.isGrounded) {
 			checkpoint = transform.position;
 		} else if (GetE()) {
 			transform.position = checkpoint;
