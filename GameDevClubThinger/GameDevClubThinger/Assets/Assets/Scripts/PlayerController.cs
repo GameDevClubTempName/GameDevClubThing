@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour {
 	private bool isJumpHeld = false;
 	private bool isGliding = false;
 	
-	private bool doCameraUpdate = false;
+	private bool doCameraUpdate = true;
 	
 	private Vector3 velocity;
 	private Vector3 checkpoint;
@@ -71,7 +71,6 @@ public class PlayerController : MonoBehaviour {
 			Debug.Log("Camera not found!");
 		} else {
 			cameraController = camera.GetComponent<MainCameraController>();
-			cameraController.CameraUpdate();
 		}
 		
 		jumpVelocity = 2 * maxJumpHeight / timeToApex;
