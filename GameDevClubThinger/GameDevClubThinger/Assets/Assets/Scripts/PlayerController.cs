@@ -21,9 +21,13 @@ public class PlayerController : MonoBehaviour {
 	public float timeToApex = 1f;
 	
 	// airControl: Factor on how easily player can change their velocity while in the air
-	// glideVelocity: Velocity minimum when gliding
+	// glideDownSpeed: Downwards velocity target when gliding above glideMinSpeed
+	// glideMinSpeed: A percent (range 0-1) of movementSpeed, at which speed gliding will result in 0 gravity and a tendency towards glideDownSpeed
+	// glideDrag: A percent (range 0-1) of gravityOnFalling, applied to reduction of gravity even when falling straight down
 	public float airControl = 1.5f;
-	public float glideVelocity = -1f;
+	public float glideDownSpeed = -1f;
+	public float glideMinSpeed = 0.9f;
+	public float glideDrag = 0.7f;
 	
 	// Gravity used whenever player is falling (units per second per second)
 	public float gravityOnFalling = -10f;
@@ -131,6 +135,10 @@ public class PlayerController : MonoBehaviour {
 				Debug.Log("Jump released.");
 			#endif
 		}
+	}
+	
+	float GetPlanarMagnitude() {
+		return (float) Math.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 	}
 	
 	void FixedAcceleration(Vector3 force) {
@@ -246,15 +254,18 @@ public class PlayerController : MonoBehaviour {
 			glide = isGliding;
 		}
 		
+		if (glide) {
+			
+			float glidePercent = GetPlanarMagnitude() / movementSpeed;
+			
+			if (glidePercent >= glideMinSpeed) {
+				gravity = (glideDownSpeed - velocity.y) * airControl;
+			} else {
+				gravity *= (glideDrag / (glideMinSpeed * glideMinSpeed)) * (glidePercent - glideMinSpeed) * (glidePercent - glideMinSpeed);
+			}
+		}
+		
 		FixedAcceleration(transform.up * gravity);
-		
-		if (glide && velocity.y < glideVelocity) {
-			velocity = new Vector3(velocity.x, glideVelocity, velocity.z);
-		}
-		
-		if (controller.isGrounded) {
-			isGliding = false;
-		}
 	}
 	
 	void FixedUpdate() {
@@ -267,6 +278,10 @@ public class PlayerController : MonoBehaviour {
 		
 		if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
 			doCameraUpdate = true;
+		}
+		
+		if (controller.isGrounded) {
+			isGliding = false;
 		}
 	}
 	
