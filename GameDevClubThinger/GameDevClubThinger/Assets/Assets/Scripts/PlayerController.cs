@@ -2,9 +2,6 @@
 #define DEBUG_CONSTANTS
 #define DEBUG_MOVEMENT
 
-// New glider movement currently handles weird, undef this to revert to old glider movement.
-#define NEW_GLIDER_MOVEMENT
-
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -145,7 +142,11 @@ public class PlayerController : MonoBehaviour {
 		
 		float dX = 0;
 		float dZ = 0;
+		bool input = false;
+		
 		if (inputVertical != 0 || inputHorizontal != 0) {
+			
+			input = true;
 			
 			// Get the direction of the input; forward has an angle of 0, right strafing has an angle of pi / 2
 			// Backward should have an angle of 1 pi, but the range of inverse sin is from -pi / 2 to pi / 2; forward and backward appear identical to asin
@@ -167,26 +168,11 @@ public class PlayerController : MonoBehaviour {
 			dX = (float) (-movementSpeed * inputMagnitude * Math.Sin(movementAngle));
 			dZ = (float) (-movementSpeed * inputMagnitude * Math.Cos(movementAngle));
 		}
-		#if NEW_GLIDER_MOVEMENT
-		else if (isGliding && (velocity.x != 0 || velocity.z != 0)) {
-			
-			double movementMagnitude = Math.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-			double movementAngle = Math.Asin(velocity.x / movementMagnitude);
-			
-			if (velocity.z < 0) {
-				movementAngle = Math.PI - movementAngle;
-			}
-			
-			dX = (float) (movementSpeed * Math.Sin(movementAngle));
-			dZ = (float) (movementSpeed * Math.Cos(movementAngle));
-			
-		}
-		#endif
 		
 		if (controller.isGrounded) {
 			velocity = new Vector3(dX, velocity.y, dZ);
 			
-		} else {
+		} else if (!(isGliding && !input)) {
 			dX = (dX - velocity.x) * airControl;
 			dZ = (dZ - velocity.z) * airControl;
 			
