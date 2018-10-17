@@ -54,7 +54,6 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 velocity;
 	private Vector3 checkpoint;
 	
-	private Transform transform;
 	private CharacterController controller;
 	private MainCameraController cameraController;
 	
@@ -66,7 +65,6 @@ public class PlayerController : MonoBehaviour {
 	
 	void LoadValues() {
 		
-		transform = this.GetComponent<Transform>();
 		controller = this.GetComponent<CharacterController>();
 		
 		GameObject camera = GameObject.FindGameObjectWithTag("MainCamera");
@@ -196,7 +194,9 @@ public class PlayerController : MonoBehaviour {
 		}
 		
 		bool jumpPress = GetJumpPress();
-		bool jumpRelease = GetJumpRelease();
+		
+		// Not currently used:
+		// bool jumpRelease = GetJumpRelease();
 		
 		// Gliding:
 		if (jumpPress && !isJumpHeld && !controller.isGrounded) {
