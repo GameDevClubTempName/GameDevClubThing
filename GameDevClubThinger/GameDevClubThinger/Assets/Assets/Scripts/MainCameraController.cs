@@ -49,7 +49,7 @@ public class MainCameraController : MonoBehaviour {
 		}
 	}
 	
-	public void Move(float inPitch, bool doCameraUpdate) {
+	public bool Move(float inPitch, bool doCameraUpdate) {
 		
 		if (inPitch != 0) {
 			
@@ -68,6 +68,8 @@ public class MainCameraController : MonoBehaviour {
 		if (doCameraUpdate) {
 			CameraUpdate();
 		}
+		
+		return doCameraUpdate;
 	}
 	
 	void Start() {

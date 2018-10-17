@@ -209,14 +209,16 @@ public class PlayerController : MonoBehaviour {
 	
 	void PlayerControl() {
 		
-		bool doCameraUpdate = false;
+		bool doCameraUpdate2 = false;
 		
 		if (inputMouseX != 0) {
 			transform.Rotate(0, turningSpeed * inputMouseX * Time.deltaTime, 0);
-			doCameraUpdate = true;
+			doCameraUpdate2 = true;
 		}
 		
-		cameraController.Move(inputMouseY, doCameraUpdate);
+		if (cameraController.Move(inputMouseY, doCameraUpdate2)) {
+			doCameraUpdate = false;
+		}
 		
 		if (GetQ() && controller.isGrounded) {
 			checkpoint = transform.position;
