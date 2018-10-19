@@ -8,6 +8,7 @@ using System;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
+
 	
 	// movementSpeed: In units per second
 	// groundControl: Factor on how easily player can change their velocity while on the ground
@@ -300,5 +301,57 @@ public class PlayerController : MonoBehaviour {
 		if (doCameraUpdate) {
 			cameraController.CameraUpdate();
 		}
+
+		if (Input.GetKeyDown ("left shift")) {
+			if (canInteract) {
+				CallInteraction ();
+			}
+		}
 	}
+
+
+
+	private int interactNear = 0;
+	private bool canInteract = false;
+	public List<Interactable> interactables = new List<Interactable>();
+	public List<Transform> interTransform = new List<Transform>();
+
+
+	private void CallInteraction() {
+		float closestDistance;
+		Vector3 selfPosition = transform.position;
+		int interCount = interactables.Count;
+		int index = 0;
+
+		closestDistance = Vector3.Distance(selfPosition, interTransform[0].position);
+		if (interCount != 0) {
+			for (int i = 1; i < interCount; i++) {
+				float tempDistance = Vector3.Distance(selfPosition, interTransform[0].position);
+				if (tempDistance < closestDistance) {
+					closestDistance = tempDistance;
+					index = i;
+				}
+			}
+		}
+		interactables [index].Interaction ();
+	}
+
+	public void EnterInteraction(GameObject inter) {
+		interactNear++;
+		canInteract = true;
+		interactables.Add (inter.GetComponent<Interactable>());
+		interTransform.Add (inter.GetComponent<Transform> ());
+	}
+
+	public void ExitInteraction(GameObject inter) {
+		interactNear--;
+		if (interactNear == 0) {
+			canInteract = false;
+		} else if (interactNear < 0) {
+			Debug.Log ("interactNear == " + interactNear + " ????");
+		}
+		interactables.Remove (inter.GetComponent<Interactable>());
+		interTransform.Remove (inter.GetComponent<Transform> ());
+	}
+		
 }
