@@ -31,7 +31,8 @@ public class PlayerController : MonoBehaviour {
 	public float glideDownSpeed = -1f;
 	public float glideMinSpeed = 0.9f;
 	public float glideDrag = 0.7f;
-	
+    public bool canGlide = true;
+
 	// Gravity used whenever player is falling (units per second per second)
 	public float gravityOnFalling = -10f;
 	
@@ -149,6 +150,13 @@ public class PlayerController : MonoBehaviour {
 		velocity += force * Time.fixedDeltaTime;
 	}
 	
+    void setCanGlide(bool newCanGlide) {
+        canGlide = newCanGlide;
+
+        // If the player was gliding, and it is set that they can no longer glide, stop their gliding.
+        isGliding = isGliding && newCanGlide;
+    }
+
 	void FixedPlayerControl() {
 		
 		float dX = 0;
@@ -196,12 +204,15 @@ public class PlayerController : MonoBehaviour {
 		}
 		
 		bool jumpPress = GetJumpPress();
-		
-		// Not currently used:
-		// bool jumpRelease = GetJumpRelease();
-		
-		// Gliding:
-		if (jumpPress && !isJumpHeld && !controller.isGrounded) {
+
+        // Not currently used:
+        // bool jumpRelease = GetJumpRelease();
+
+        // Gliding:
+        // Note: It may appear that canGlide == false means the player can't untoggle glide,
+        // which is why setting canGlide to false should be accompanied by setting isGliding to false.
+        // This is handled with setCanGlide().
+		if (jumpPress && canGlide && !isJumpHeld && !controller.isGrounded) {
 			isGliding = !isGliding;
 			
 			#if DEBUG_MOVEMENT
