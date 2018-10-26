@@ -53,6 +53,7 @@ public class PlayerController : MonoBehaviour {
 	
 	private bool isJumpHeld = false;
 	private bool isGliding = false;
+	private bool isInAnimation = false;
 	
 	private bool doCameraUpdate = true;
 	
@@ -128,7 +129,9 @@ public class PlayerController : MonoBehaviour {
 		
 		inputQ = inputQ || Input.GetKeyDown(KeyCode.Q);
 		inputE = inputE || Input.GetKeyDown(KeyCode.E);
-		
+
+		isInAnimation = Input.GetKey(KeyCode.K);
+
 		inputJumpPress = inputJumpPress || Input.GetKeyDown(KeyCode.Space);
 		inputJumpRelease = inputJumpRelease || Input.GetKeyUp(KeyCode.Space);
 		
@@ -288,12 +291,14 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void FixedUpdate() {
-		
-		FixedPlayerControl();
-		Gravity();
-		
-		controller.Move(velocity * Time.fixedDeltaTime);
-		velocity = controller.velocity;
+
+		if (!isInAnimation) {
+			FixedPlayerControl();
+			Gravity();
+
+			controller.Move(velocity * Time.fixedDeltaTime);
+			velocity = controller.velocity;
+		}
 		
 		if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
 			doCameraUpdate = true;
