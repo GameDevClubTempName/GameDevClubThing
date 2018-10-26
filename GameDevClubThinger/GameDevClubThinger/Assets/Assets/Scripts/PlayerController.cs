@@ -314,7 +314,10 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		if (Input.GetKeyDown ("left shift")) {
-			if (canInteract) {
+			if (carryingObject) {
+				DropItem ();
+			}
+			else if (canInteract) {
 				//Checks for any nearby interactable objects and triggers the closest one
 				CallInteraction ();
 			}
@@ -325,6 +328,9 @@ public class PlayerController : MonoBehaviour {
 	//holds the number of nearby interactables
 	[SerializeField]private int interactNear = 0;
 	[SerializeField]private bool canInteract = false;
+	[SerializeField]private bool carryingObject = false;
+	[SerializeField]private GameObject heldItem;
+	[SerializeField]private Transform heldItemPoint;
 	[SerializeField]private List<Interactable> interactables = new List<Interactable>();
 	[SerializeField]private List<Transform> interTransform = new List<Transform>();
 
@@ -361,6 +367,19 @@ public class PlayerController : MonoBehaviour {
 
 		//calls the Interaction method on the closest interactable
 		interactables [index].Interaction ();
+	}
+
+	public void PickUpItem(GameObject pickUp) {
+		carryingObject = true;
+		heldItem = pickUp;
+		pickUp.transform.SetParent (transform);
+	}
+
+	public void DropItem() {
+		carryingObject = false;
+		heldItem.transform.parent = null;
+		heldItem = null;
+
 	}
 
 	/**
