@@ -304,27 +304,41 @@ public class PlayerController : MonoBehaviour {
 
 		if (Input.GetKeyDown ("left shift")) {
 			if (canInteract) {
+				//Checks for any nearby interactable objects and triggers the closest one
 				CallInteraction ();
 			}
 		}
 	}
 
 
+	//holds the number of nearby interactables
+	[SerializeField]private int interactNear = 0;
+	[SerializeField]private bool canInteract = false;
+	[SerializeField]private List<Interactable> interactables = new List<Interactable>();
+	[SerializeField]private List<Transform> interTransform = new List<Transform>();
 
-	private int interactNear = 0;
-	private bool canInteract = false;
-	public List<Interactable> interactables = new List<Interactable>();
-	public List<Transform> interTransform = new List<Transform>();
-
-
+	/**
+	 * Checks for any nearby interactable objects and triggers the closest one
+	 */
 	private void CallInteraction() {
+
+		//creates a variable to compare the distance of each nearby interactable
 		float closestDistance;
+
+		//creates a reference to the player's position
 		Vector3 selfPosition = transform.position;
+
+		//holds the length of the nearby interactables list
 		int interCount = interactables.Count;
+
+		//holds the index of the closest interactable
 		int index = 0;
 
+		//sets the first interactable in the list as the closest by default
 		closestDistance = Vector3.Distance(selfPosition, interTransform[0].position);
-		if (interCount != 0) {
+
+		//if there are more interables in the list, compare each to find out which is closest
+		if (interCount > 1) {
 			for (int i = 1; i < interCount; i++) {
 				float tempDistance = Vector3.Distance(selfPosition, interTransform[0].position);
 				if (tempDistance < closestDistance) {
@@ -333,18 +347,28 @@ public class PlayerController : MonoBehaviour {
 				}
 			}
 		}
+
+		//calls the Interaction method on the closest interactable
 		interactables [index].Interaction ();
 	}
 
+	/**
+	 * Causes the player to add an interactable to the lists 
+	 */
 	public void EnterInteraction(GameObject inter) {
 		interactNear++;
+		//allows CallInteraction to be called from update
 		canInteract = true;
 		interactables.Add (inter.GetComponent<Interactable>());
 		interTransform.Add (inter.GetComponent<Transform> ());
 	}
 
+	/**
+	 * Causes the player to remove an interactable from the lists
+	 */
 	public void ExitInteraction(GameObject inter) {
 		interactNear--;
+		//if there are no nearby objects, prevent CallInteraction from being called
 		if (interactNear == 0) {
 			canInteract = false;
 		} else if (interactNear < 0) {
