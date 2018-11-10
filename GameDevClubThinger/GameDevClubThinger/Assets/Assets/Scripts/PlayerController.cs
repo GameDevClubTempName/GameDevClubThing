@@ -364,5 +364,11 @@ public class PlayerController : MonoBehaviour {
 		interactables.Remove (inter.GetComponent<Interactable>());
 		interTransform.Remove (inter.GetComponent<Transform> ());
 	}
+	void onCollisionEnter(Collision col){
+		if(col.gameObject.name == "Vennntttttt")
+        {
+            Destroy(col.gameObject);
+        }
 		
+	}
 }
